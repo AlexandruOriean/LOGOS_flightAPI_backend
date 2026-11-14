@@ -1,11 +1,9 @@
 package com.codecool.flight_api_project.airplane;
 
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @Repository
@@ -19,7 +17,9 @@ public class AirplaneServiceImpl implements AirplaneService {
         return airplaneRepository.save(airplane);
     }
 
-    public List<Airplane> getAllAirplanes() { return airplaneRepository.findAll(); }
+    public List<Airplane> getAllAirplanes() {
+        return airplaneRepository.findAll();
+    }
 
     @Override
     public Airplane getAirplaneById(Long id) {
@@ -30,7 +30,6 @@ public class AirplaneServiceImpl implements AirplaneService {
     public void deleteAirplaneByID(Long id) {
         airplaneRepository.deleteById(id);
     }
-
 
     @Override
     public Airplane updateAirplaneById(Long id, Airplane airplaneToUpdate) {

@@ -2,13 +2,12 @@ package com.codecool.flight_api_project.security.jwt;
 
 import com.codecool.flight_api_project.security.service.UserDetailsImpl;
 import io.jsonwebtoken.*;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 
 @Component
 public class JwtUtils {
@@ -33,7 +32,11 @@ public class JwtUtils {
     }
 
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 
     public boolean validateJwtToken(String authToken) {
@@ -55,4 +58,3 @@ public class JwtUtils {
         return false;
     }
 }
-

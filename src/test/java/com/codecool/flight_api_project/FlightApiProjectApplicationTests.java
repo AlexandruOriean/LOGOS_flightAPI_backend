@@ -1,33 +1,33 @@
-//package com.codecool.flight_api_project;
+// package com.codecool.flight_api_project;
 //
-//import com.codecool.flight_api_project.airline.Airline;
-//import com.codecool.flight_api_project.airline.AirlineRepository;
-//import com.codecool.flight_api_project.airline.AirlineService;
-//import com.codecool.flight_api_project.airport.Airport;
-//import com.codecool.flight_api_project.city.City;
-//import com.codecool.flight_api_project.flight.Flight;
-//import com.codecool.flight_api_project.flight.FlightRepository;
-//import com.codecool.flight_api_project.flight.FlightService;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-//import org.springframework.test.context.junit.jupiter.SpringExtension;
-//import org.springframework.test.context.junit4.SpringRunner;
+// import com.codecool.flight_api_project.airline.Airline;
+// import com.codecool.flight_api_project.airline.AirlineRepository;
+// import com.codecool.flight_api_project.airline.AirlineService;
+// import com.codecool.flight_api_project.airport.Airport;
+// import com.codecool.flight_api_project.city.City;
+// import com.codecool.flight_api_project.flight.Flight;
+// import com.codecool.flight_api_project.flight.FlightRepository;
+// import com.codecool.flight_api_project.flight.FlightService;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.test.context.SpringBootTest;
+// import org.springframework.boot.test.mock.mockito.MockBean;
+// import org.springframework.test.context.junit.jupiter.SpringExtension;
+// import org.springframework.test.context.junit4.SpringRunner;
 //
-//import java.time.LocalDate;
-//import java.time.LocalTime;
-//import java.util.stream.Collectors;
-//import java.util.stream.Stream;
+// import java.time.LocalDate;
+// import java.time.LocalTime;
+// import java.util.stream.Collectors;
+// import java.util.stream.Stream;
 //
-////import static org.junit.Assert.assertEquals;
-//import static org.mockito.Mockito.*;
+//// import static org.junit.Assert.assertEquals;
+// import static org.mockito.Mockito.*;
 //
-//@ExtendWith(SpringExtension.class)
-//@SpringBootTest
-//class FlightApiProjectApplicationTests
-//{
+// @ExtendWith(SpringExtension.class)
+// @SpringBootTest
+// class FlightApiProjectApplicationTests
+// {
 //
 //    @Autowired
 //    private AirlineService airlineService;
@@ -84,11 +84,16 @@
 //
 //        when(flightRepository.getFlightByParams(airportFrom.getAirportName(),
 //                airportTo.getAirportName(), LocalDate.of(2021, 1,15))).thenReturn(
-//                (Stream.of(new Flight(1L, LocalDate.of(2021, 1,15), 100L, LocalTime.of(9, 20),LocalTime.of(11, 20),airportFrom,airportTo,airline),
-//                        new Flight(1L, LocalDate.of(2021, 1,15), 100L, LocalTime.of(10, 20),LocalTime.of(12, 20),airportFrom,airportTo,airline),
-//                        new Flight(1L, LocalDate.of(2021, 1,15), 100L, LocalTime.of(10, 20),LocalTime.of(13, 20),airportFrom,airportTo,airline)
+//                (Stream.of(new Flight(1L, LocalDate.of(2021, 1,15), 100L, LocalTime.of(9, 20),LocalTime.of(11,
+// 20),airportFrom,airportTo,airline),
+//                        new Flight(1L, LocalDate.of(2021, 1,15), 100L, LocalTime.of(10, 20),LocalTime.of(12,
+// 20),airportFrom,airportTo,airline),
+//                        new Flight(1L, LocalDate.of(2021, 1,15), 100L, LocalTime.of(10, 20),LocalTime.of(13,
+// 20),airportFrom,airportTo,airline)
 //                )).collect(Collectors.toList()));
-//        System.out.println(flightService.getFlightByParams(airportFrom.getAirportName(),airportTo.getAirportName(), LocalDate.of(2021, 1,15)).size());
-//        assertEquals(3,flightService.getFlightByParams(airportFrom.getAirportName(),airportTo.getAirportName(), LocalDate.of(2021, 1,15)).size());
+//        System.out.println(flightService.getFlightByParams(airportFrom.getAirportName(),airportTo.getAirportName(),
+// LocalDate.of(2021, 1,15)).size());
+//        assertEquals(3,flightService.getFlightByParams(airportFrom.getAirportName(),airportTo.getAirportName(),
+// LocalDate.of(2021, 1,15)).size());
 //    }
-//}
+// }

@@ -12,12 +12,12 @@ public class CityServiceImpl implements CityService {
     private CityRepository cityRepository;
 
     @Override
-    public City saveCity(City city){
+    public City saveCity(City city) {
         return cityRepository.save(city);
     }
 
     @Override
-    public void deleteCityById(Long id){
+    public void deleteCityById(Long id) {
         cityRepository.deleteById(id);
     }
 
@@ -27,6 +27,4 @@ public class CityServiceImpl implements CityService {
         city.setCityName(cityToUpdate.getCityName());
         return cityRepository.save(city);
     }
-
 }
-

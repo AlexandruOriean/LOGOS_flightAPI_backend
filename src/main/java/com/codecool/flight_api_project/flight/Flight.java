@@ -3,12 +3,10 @@ package com.codecool.flight_api_project.flight;
 import com.codecool.flight_api_project.airline.Airline;
 import com.codecool.flight_api_project.airport.Airport;
 import com.fasterxml.jackson.annotation.*;
-import lombok.*;
-
-import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
-
+import javax.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "Flight")
@@ -17,8 +15,7 @@ import java.time.LocalTime;
 @Builder
 @Setter
 @Getter
-public class Flight
-{
+public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "flight_id")
@@ -47,5 +44,4 @@ public class Flight
     @ManyToOne
     @JoinColumn(name = "airline_id")
     private Airline airline;
-
 }

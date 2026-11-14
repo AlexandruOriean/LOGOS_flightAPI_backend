@@ -3,9 +3,8 @@ package com.codecool.flight_api_project.flight;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
-public class FlightServiceImpl implements FlightService{
+public class FlightServiceImpl implements FlightService {
 
     @Autowired
     private FlightRepository flightRepository;

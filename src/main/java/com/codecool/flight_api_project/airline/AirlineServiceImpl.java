@@ -1,15 +1,13 @@
 package com.codecool.flight_api_project.airline;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AirlineServiceImpl implements AirlineService{
+public class AirlineServiceImpl implements AirlineService {
 
     @Autowired
     private AirlineRepository airlineRepository;
-
 
     @Override
     public Airline saveAirline(Airline airline) {
@@ -21,7 +19,6 @@ public class AirlineServiceImpl implements AirlineService{
         airlineRepository.deleteById(id);
     }
 
-
     @Override
     public Airline updateAirlineById(Long id, Airline airlineToUpdate) {
         Airline airline = airlineRepository.findById(id).get();
@@ -29,5 +26,4 @@ public class AirlineServiceImpl implements AirlineService{
         airline.setName(airlineToUpdate.getName());
         return airlineRepository.save(airline);
     }
-
 }

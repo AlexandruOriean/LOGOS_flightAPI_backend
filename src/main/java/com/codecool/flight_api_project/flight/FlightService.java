@@ -7,5 +7,4 @@ public interface FlightService {
     void deleteFlightById(Long id);
 
     Flight updateFlightById(Long id, Flight flight);
-
 }

@@ -1,13 +1,12 @@
 package com.codecool.flight_api_project.airport;
 
 import com.codecool.flight_api_project.city.City;
+import java.util.Objects;
+import javax.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
-import java.util.Objects;
-
 @Entity
-@Table(name="Airport")
+@Table(name = "Airport")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -17,14 +16,14 @@ import java.util.Objects;
 public class Airport {
 
     @Id
-    @Column(name="airport_id")
+    @Column(name = "airport_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="airport_iata_code")
+    @Column(name = "airport_iata_code")
     private String airportIataCode;
 
-    @Column(name="airport_name")
+    @Column(name = "airport_name")
     private String airportName;
 
     @ManyToOne

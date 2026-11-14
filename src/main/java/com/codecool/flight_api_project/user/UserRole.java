@@ -1,14 +1,11 @@
 package com.codecool.flight_api_project.user;
 
-
+import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bytebuddy.implementation.bind.annotation.Default;
 
-import javax.persistence.*;
-import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -23,7 +20,4 @@ public class UserRole {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private UserRoleEnum name = UserRoleEnum.ROLE_USER;
-
-
-
 }
