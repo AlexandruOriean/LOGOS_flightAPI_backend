@@ -1,6 +1,6 @@
 package com.codecool.flight_api_project.airplane;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

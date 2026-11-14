@@ -3,9 +3,9 @@ package com.codecool.flight_api_project.flight;
 import com.codecool.flight_api_project.airline.Airline;
 import com.codecool.flight_api_project.airport.Airport;
 import com.fasterxml.jackson.annotation.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import javax.persistence.*;
 import lombok.*;
 
 @Entity

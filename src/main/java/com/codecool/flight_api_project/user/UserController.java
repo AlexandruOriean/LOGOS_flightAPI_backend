@@ -1,13 +1,13 @@
 package com.codecool.flight_api_project.user;
 
 import com.codecool.flight_api_project.payload.response.JwtResponse;
-import com.codecool.flight_api_project.security.jwt.JwtUtils;
+import com.codecool.flight_api_project.security.jwt.JwtTokenService;
 import com.codecool.flight_api_project.security.service.UserDetailsImpl;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,7 +34,7 @@ public class UserController {
     UserRoleRepository roleRepository;
 
     @Autowired
-    JwtUtils jwtUtils;
+    JwtTokenService jwtTokenService;
 
     @Autowired
     UserService userService;
@@ -56,7 +56,7 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        String jwt = jwtTokenService.generateToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()

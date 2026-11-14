@@ -1,7 +1,9 @@
 package com.codecool.flight_api_project.user;
 
-import java.util.Set;
-import javax.persistence.*;
+import static jakarta.persistence.GenerationType.IDENTITY;
+
+import jakarta.persistence.*;
+import java.util.*;
 import lombok.*;
 
 @AllArgsConstructor
@@ -14,7 +16,7 @@ import lombok.*;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @Column(name = "name")

@@ -2,7 +2,7 @@ package com.codecool.flight_api_project.cart;
 
 import com.codecool.flight_api_project.flight.Flight;
 import com.codecool.flight_api_project.user.User;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "Cart")

@@ -1,6 +1,6 @@
 package com.codecool.flight_api_project.city;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity

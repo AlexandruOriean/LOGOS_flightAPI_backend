@@ -31,7 +31,7 @@ public class AirplaneController {
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Airplane getAirplaneBy(@PathVariable Long id) {
-        return airplaneRepository.getOne(id);
+        return airplaneService.getAirplaneById(id);
     }
 
     @PostMapping()
