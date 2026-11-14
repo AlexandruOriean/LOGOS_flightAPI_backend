@@ -1,6 +1,8 @@
 package com.codecool.flightapi.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,13 +34,18 @@ import org.springframework.test.web.servlet.MockMvc;
             "spring.datasource.username=sa",
             "spring.datasource.password=",
             // Test-only key (64 random bytes, Base64). Never use outside tests.
-            "app.jwt.secret=dGVzdC1vbmx5LWtleS1kby1ub3QtdXNlLWluLXByb2R1Y3Rpb24tMDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3A="
+            "app.jwt.secret=dGVzdC1vbmx5LWtleS1kby1ub3QtdXNlLWluLXByb2R1Y3Rpb24tMDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3A=",
+            // The only way to get an admin: provisioned from configuration at startup
+            "app.admin.username=it-admin",
+            "app.admin.email=it-admin@example.com",
+            "app.admin.password=" + AuthenticationFlowIT.ADMIN_PASSWORD
         })
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthenticationFlowIT {
 
     private static final String PASSWORD = "Secret123!";
+    static final String ADMIN_PASSWORD = "it-admin-Secret-123!";
 
     @Autowired
     private MockMvc mockMvc;
@@ -49,9 +56,8 @@ class AuthenticationFlowIT {
     @BeforeAll
     void registerAndLogin() throws Exception {
         register("it-user", "it-user@example.com", "");
-        register("it-admin", "it-admin@example.com", ",\"roles\":[\"admin\"]");
-        userToken = login("it-user");
-        adminToken = login("it-admin");
+        userToken = login("it-user", PASSWORD);
+        adminToken = login("it-admin", ADMIN_PASSWORD);
     }
 
     @Test
@@ -59,12 +65,41 @@ class AuthenticationFlowIT {
     void loginIssuesTokenWithRoles() throws Exception {
         mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(credentials("it-user")))
+                        .content(credentials("it-user", PASSWORD)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.roles[0]").value("ROLE_USER"));
 
         assertThat(userToken.split("\\.")).hasSize(3);
+    }
+
+    @Test
+    @DisplayName("SECURITY: a client cannot make itself admin by sending roles at registration")
+    void selfAssignedAdminRoleIsIgnored() throws Exception {
+        register("it-mallory", "it-mallory@example.com", ",\"roles\":[\"admin\"]");
+
+        mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(credentials("it-mallory", PASSWORD)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles").value(contains("ROLE_USER")));
+
+        String token = login("it-mallory", PASSWORD);
+        mockMvc.perform(post("/api/v1/cities")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"cityName\":\"Hacked\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("the provisioned admin account has ROLE_ADMIN")
+    void provisionedAdminHasAdminRole() throws Exception {
+        mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(credentials("it-admin", ADMIN_PASSWORD)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles").value(containsInAnyOrder("ROLE_USER", "ROLE_ADMIN")));
     }
 
     @Test
@@ -195,10 +230,10 @@ class AuthenticationFlowIT {
                 .andExpect(status().isCreated());
     }
 
-    private String login(String username) throws Exception {
+    private String login(String username, String password) throws Exception {
         String body = mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(credentials(username)))
+                        .content(credentials(username, password)))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -206,8 +241,8 @@ class AuthenticationFlowIT {
         return JsonPath.read(body, "$.accessToken");
     }
 
-    private static String credentials(String username) {
-        return "{\"username\":\"%s\",\"password\":\"%s\"}".formatted(username, PASSWORD);
+    private static String credentials(String username, String password) {
+        return "{\"username\":\"%s\",\"password\":\"%s\"}".formatted(username, password);
     }
 
     private static String bearer(String token) {

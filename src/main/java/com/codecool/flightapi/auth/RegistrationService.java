@@ -6,7 +6,6 @@ import com.codecool.flightapi.user.RoleName;
 import com.codecool.flightapi.user.RoleRepository;
 import com.codecool.flightapi.user.User;
 import com.codecool.flightapi.user.UserRepository;
-import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +21,7 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * Registers a new user.
+     * Registers a new user with {@link RoleName#ROLE_USER} only. Clients cannot choose their roles.
      *
      * @throws ResourceAlreadyExistsException if the username or e-mail is already taken
      */
@@ -40,20 +39,8 @@ public class RegistrationService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
-        user.setRole(resolveRoles(request.getRoles()));
+        user.setRole(Set.of(findRole(RoleName.ROLE_USER)));
         userRepository.save(user);
-    }
-
-    // TODO(REFACTORING_ROADMAP task 5): clients must not be able to self-assign ROLE_ADMIN.
-    private Set<Role> resolveRoles(Set<String> requestedRoles) {
-        Set<Role> roles = new HashSet<>();
-        if (requestedRoles == null) {
-            roles.add(findRole(RoleName.ROLE_USER));
-        } else {
-            requestedRoles.forEach(
-                    role -> roles.add(findRole("admin".equals(role) ? RoleName.ROLE_ADMIN : RoleName.ROLE_USER)));
-        }
-        return roles;
     }
 
     private Role findRole(RoleName name) {
