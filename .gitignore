@@ -33,3 +33,12 @@ build/
 .vscode/
 .DS_Store
 
+
+### Local notes ###
+REFACTORING_ROADMAP.md
+
+### Local H2 database (dev) ###
+/data/
+
+### Maven flatten plugin ###
+.flattened-pom.xml

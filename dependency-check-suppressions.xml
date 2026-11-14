@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OWASP dependency-check suppressions.
+
+  Only add an entry for a confirmed false positive or an accepted, documented risk.
+  Every entry MUST have:
+    - a <notes> explaining why it is safe (link to the analysis / ticket),
+    - an `until` date so it is re-evaluated (format: yyyy-MM-ddZ).
+  Prefer upgrading the dependency over suppressing.
+
+  Example:
+  <suppress until="2027-03-31Z">
+      <notes>CVE-XXXX-YYYY affects feature Z, which this application does not use. See #123.</notes>
+      <packageUrl regex="true">^pkg:maven/com\.example/library@.*$</packageUrl>
+      <cve>CVE-XXXX-YYYY</cve>
+  </suppress>
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+</suppressions>
