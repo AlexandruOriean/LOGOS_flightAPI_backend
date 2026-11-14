@@ -29,7 +29,7 @@ public class CityController {
         return cityRepository.findAll();
     }
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<City> addCity(@RequestBody final City city) {
         City savedCity = cityService.saveCity(city);
         return new ResponseEntity<>(savedCity, HttpStatus.CREATED);

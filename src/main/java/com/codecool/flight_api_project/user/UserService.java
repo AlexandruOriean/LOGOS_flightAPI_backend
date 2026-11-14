@@ -76,8 +76,6 @@ public class UserService {
     }
 
     private ResponseEntity<?> validateRegister(RegisterRequest request) {
-        Optional<User> userName = getUserByUsername(request.getUsername());
-        User email = getUserByEmail(request.getEmail());
         if (userRepository.existsByUsername(request.getUsername())) {
             return new ResponseEntity<>("Username already in use", HttpStatus.INTERNAL_SERVER_ERROR);
         }

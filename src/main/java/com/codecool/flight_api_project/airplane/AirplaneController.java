@@ -34,7 +34,7 @@ public class AirplaneController {
         return airplaneService.getAirplaneById(id);
     }
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<Airplane> addAirplane(@RequestBody final Airplane airplane) {
         Airplane newAirplane = airplaneService.addAirplane(airplane);
         return new ResponseEntity<>(newAirplane, HttpStatus.CREATED);

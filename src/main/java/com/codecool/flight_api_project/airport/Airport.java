@@ -33,13 +33,12 @@ public class Airport {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Airport airport = (Airport) o;
-        return Objects.equals(airportIataCode, airport.airportIataCode);
+        if (!(o instanceof Airport airport)) return false;
+        return Objects.equals(airportIataCode, airport.getAirportIataCode());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(airportIataCode);
+        return Objects.hashCode(airportIataCode);
     }
 }

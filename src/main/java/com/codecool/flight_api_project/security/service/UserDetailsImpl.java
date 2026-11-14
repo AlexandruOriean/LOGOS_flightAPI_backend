@@ -15,8 +15,6 @@ public class UserDetailsImpl implements UserDetails {
 
     private Long id;
 
-    private String name;
-
     private String username;
 
     private String email;
@@ -93,8 +91,12 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserDetailsImpl user = (UserDetailsImpl) o;
+        if (!(o instanceof UserDetailsImpl user)) return false;
         return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

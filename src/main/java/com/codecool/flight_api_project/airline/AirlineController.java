@@ -27,7 +27,7 @@ public class AirlineController {
         return airlineRepository.findAll();
     }
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<Airline> addAirline(@RequestBody final Airline airline) {
         Airline savedAirline = airlineService.saveAirline(airline);
         return new ResponseEntity<>(savedAirline, HttpStatus.CREATED);
