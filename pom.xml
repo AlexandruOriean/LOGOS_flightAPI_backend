@@ -44,11 +44,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc.version}</version>
-        </dependency>
 
         <!-- ===== Security ===== -->
         <dependency>
@@ -153,10 +148,11 @@
 
     <profiles>
         <!--
-          Local development (active by default): adds the H2 database and runs
+          Local development (active by default): adds the H2 database and the
+          Swagger UI / OpenAPI docs (/swagger-ui.html, /v3/api-docs), and runs
           `./mvnw spring-boot:run` with the `dev` Spring profile.
           Production artifacts are built with `-Pprod`, which deactivates this
-          profile so H2 is NOT packaged.
+          profile so neither H2 nor springdoc (and its Jackson 2 dependency) is packaged.
         -->
         <profile>
             <id>dev</id>
@@ -167,6 +163,12 @@
                 <dependency>
                     <groupId>com.h2database</groupId>
                     <artifactId>h2</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.springdoc</groupId>
+                    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                    <version>${springdoc.version}</version>
                     <scope>runtime</scope>
                 </dependency>
             </dependencies>
