@@ -4,13 +4,19 @@ import java.util.List;
 
 public interface AirplaneService {
 
-    List<Airplane> getAllAirplanes();
+    List<Airplane> findAll();
 
-    Airplane getAirplaneById(Long id);
+    /**
+     * Returns the entity with the given id.
+     *
+     * @throws com.codecool.flight_api_project.common.error.ResourceNotFoundException if absent
+     */
+    Airplane findById(Long id);
 
-    Airplane addAirplane(Airplane airplane);
+    /** Creates a new airplane; any client-supplied id is ignored. */
+    Airplane create(Airplane airplane);
 
-    void deleteAirplaneByID(Long id);
+    Airplane update(Long id, Airplane changes);
 
-    Airplane updateAirplaneById(Long id, Airplane airplaneToUpdate);
+    void delete(Long id);
 }

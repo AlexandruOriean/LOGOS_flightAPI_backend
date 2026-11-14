@@ -1,10 +1,22 @@
 package com.codecool.flight_api_project.city;
 
+import java.util.List;
+
 public interface CityService {
 
-    City saveCity(City city);
+    List<City> findAll();
 
-    void deleteCityById(Long id);
+    /**
+     * Returns the entity with the given id.
+     *
+     * @throws com.codecool.flight_api_project.common.error.ResourceNotFoundException if absent
+     */
+    City findById(Long id);
 
-    City updateCityById(Long id, City cityToUpdate);
+    /** Creates a new city; any client-supplied id is ignored. */
+    City create(City city);
+
+    City update(Long id, City changes);
+
+    void delete(Long id);
 }

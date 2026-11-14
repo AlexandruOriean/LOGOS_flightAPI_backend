@@ -1,29 +1,47 @@
 package com.codecool.flight_api_project.airline;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.codecool.flight_api_project.common.error.ResourceNotFoundException;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AirlineServiceImpl implements AirlineService {
 
-    @Autowired
-    private AirlineRepository airlineRepository;
+    private final AirlineRepository airlineRepository;
 
     @Override
-    public Airline saveAirline(Airline airline) {
+    public List<Airline> findAll() {
+        return airlineRepository.findAll();
+    }
+
+    @Override
+    public Airline findById(Long id) {
+        return airlineRepository.findById(id).orElseThrow(() -> ResourceNotFoundException.byId("Airline", id));
+    }
+
+    @Override
+    @Transactional
+    public Airline create(Airline airline) {
+        airline.setId(null); // never let a client-supplied id overwrite an existing row
         return airlineRepository.save(airline);
     }
 
     @Override
-    public void deleteAirlineById(Long id) {
-        airlineRepository.deleteById(id);
+    @Transactional
+    public Airline update(Long id, Airline changes) {
+        Airline airline = findById(id);
+        airline.setName(changes.getName());
+        airline.setIso(changes.getIso());
+        return airline;
     }
 
     @Override
-    public Airline updateAirlineById(Long id, Airline airlineToUpdate) {
-        Airline airline = airlineRepository.findById(id).get();
-        airline.setIso(airlineToUpdate.getIso());
-        airline.setName(airlineToUpdate.getName());
-        return airlineRepository.save(airline);
+    @Transactional
+    public void delete(Long id) {
+        airlineRepository.delete(findById(id));
     }
 }

@@ -1,90 +1,59 @@
 package com.codecool.flight_api_project.user;
 
+import com.codecool.flight_api_project.common.error.ResourceAlreadyExistsException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
+    private final UserRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    UserRoleRepository roleRepository;
-
-    public Optional<User> getUserByUsername(String username) {
-        return userRepository.getByUsername(username);
-    }
-
-    public User getUserById(long userId) {
-        return userRepository.getById(userId);
-    }
-
-    public User getUserByEmail(String email) {
-        return userRepository.getByEmail(email);
-    }
-
-    public ResponseEntity<?> register(RegisterRequest request) {
-        ResponseEntity<?> validation = validateRegister(request);
-        if (validation.getStatusCode().equals(HttpStatus.OK)) {
-            User newUser = createUser(request);
-            Set<String> strRoles = request.getRoles();
-            Set<UserRole> roles = new HashSet<>();
-
-            if (strRoles == null) {
-                UserRole userRole = roleRepository
-                        .findByName(UserRoleEnum.ROLE_USER)
-                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                roles.add(userRole);
-            } else {
-                strRoles.forEach(role -> {
-                    if ("admin".equals(role)) {
-                        UserRole adminRole = roleRepository
-                                .findByName(UserRoleEnum.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-                    } else {
-                        UserRole userRole = roleRepository
-                                .findByName(UserRoleEnum.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
-                    }
-                });
-            }
-            newUser.setRole(roles);
-
-            userRepository.save(newUser);
+    /**
+     * Registers a new user.
+     *
+     * @throws ResourceAlreadyExistsException if the username or e-mail is already taken
+     */
+    @Transactional
+    public void register(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new ResourceAlreadyExistsException("Username is already taken.");
         }
-        return validation;
-    }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ResourceAlreadyExistsException("E-mail is already registered.");
+        }
 
-    private User createUser(RegisterRequest request) {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
-
-        return user;
+        user.setRole(resolveRoles(request.getRoles()));
+        userRepository.save(user);
     }
 
-    private ResponseEntity<?> validateRegister(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            return new ResponseEntity<>("Username already in use", HttpStatus.INTERNAL_SERVER_ERROR);
+    // TODO(REFACTORING_ROADMAP task 5): clients must not be able to self-assign ROLE_ADMIN.
+    private Set<UserRole> resolveRoles(Set<String> requestedRoles) {
+        Set<UserRole> roles = new HashSet<>();
+        if (requestedRoles == null) {
+            roles.add(findRole(UserRoleEnum.ROLE_USER));
+        } else {
+            requestedRoles.forEach(role ->
+                    roles.add(findRole("admin".equals(role) ? UserRoleEnum.ROLE_ADMIN : UserRoleEnum.ROLE_USER)));
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return new ResponseEntity<>("Email already in use", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        //        if (!request.getPassword().equals(request.getConfirmPassword())) {
-        //            return new ResponseEntity<>("Password don't match", HttpStatus.INTERNAL_SERVER_ERROR);
-        //        }
-        return new ResponseEntity<>("Registration successful", HttpStatus.OK);
+        return roles;
+    }
+
+    private UserRole findRole(UserRoleEnum name) {
+        return roleRepository
+                .findByName(name)
+                .orElseThrow(() -> new IllegalStateException("Role " + name + " is missing from the database"));
     }
 }

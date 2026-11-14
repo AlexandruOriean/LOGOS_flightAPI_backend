@@ -1,70 +1,61 @@
 package com.codecool.flight_api_project.airport;
 
-import java.util.ArrayList;
+import com.codecool.flight_api_project.common.web.Locations;
 import java.util.List;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/airports")
 @CrossOrigin
+@RequiredArgsConstructor
 public class AirportController {
 
-    @Autowired
     private final AirportService airportService;
 
-    @Autowired
-    private final AirportRepository airportRepository;
-
-    public AirportController(AirportService airportService, AirportRepository airportRepository) {
-        this.airportService = airportService;
-        this.airportRepository = airportRepository;
+    @GetMapping
+    public ResponseEntity<List<Airport>> getAirports() {
+        return ResponseEntity.ok(airportService.findAll());
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    List<Airport> getAirports() {
-        return airportRepository.findAll();
+    @GetMapping("/{id}")
+    public ResponseEntity<Airport> getAirport(@PathVariable Long id) {
+        return ResponseEntity.ok(airportService.findById(id));
     }
 
-    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    Optional<Airport> getAirportById(@PathVariable("id") Long id) {
-        return airportRepository.findById(id);
+    @GetMapping("/iata/{iataCode}")
+    public ResponseEntity<Airport> getAirportByIataCode(@PathVariable String iataCode) {
+        return ResponseEntity.ok(airportService.findByIataCode(iataCode));
     }
 
-    @GetMapping(path = "/iata/{iata_code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    Airport getAirportByIataCode(@PathVariable("iata_code") String iata_code) {
-        return airportRepository.getAirportByIataCode(iata_code);
+    @GetMapping("/names")
+    public ResponseEntity<List<String>> getAirportNames() {
+        return ResponseEntity.ok(airportService.findAllNames());
     }
 
-    @GetMapping(path = "/names", produces = MediaType.APPLICATION_JSON_VALUE)
-    List<String> getAirportsNames() {
-        List<String> airportNames = new ArrayList<>();
-        for (Airport airport : airportRepository.findAll()) {
-            airportNames.add(airport.getAirportName());
-        }
-        return airportNames;
+    @PostMapping
+    public ResponseEntity<Airport> createAirport(@RequestBody Airport airport) {
+        Airport created = airportService.create(airport);
+        return ResponseEntity.created(Locations.ofCreated(created.getId())).body(created);
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Airport> addAirport(@RequestBody final Airport airport) {
-        Airport savedAirport = airportService.saveAirport(airport);
-        return new ResponseEntity<>(savedAirport, HttpStatus.CREATED);
+    @PutMapping("/{id}")
+    public ResponseEntity<Airport> updateAirport(@PathVariable Long id, @RequestBody Airport changes) {
+        return ResponseEntity.ok(airportService.update(id, changes));
     }
 
-    @DeleteMapping(path = "/{id}")
-    public ResponseEntity<String> deleteAirportById(@PathVariable("id") final Long id) {
-        airportService.deleteAirportById(id);
-        return new ResponseEntity<>("Deleted successfully", HttpStatus.OK);
-    }
-
-    @PutMapping(path = "/{id}")
-    public ResponseEntity<Airport> updateAirportById(
-            @PathVariable("id") final Long id, @RequestBody final Airport airportToUpdate) {
-        Airport updatedAirport = airportService.updateAirportById(id, airportToUpdate);
-        return new ResponseEntity<>(updatedAirport, HttpStatus.OK);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAirport(@PathVariable Long id) {
+        airportService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

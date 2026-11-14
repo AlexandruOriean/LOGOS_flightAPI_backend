@@ -1,48 +1,51 @@
 package com.codecool.flight_api_project.airline;
 
+import com.codecool.flight_api_project.common.web.Locations;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/airlines")
 @CrossOrigin
+@RequiredArgsConstructor
 public class AirlineController {
 
-    @Autowired
-    private AirlineService airlineService;
+    private final AirlineService airlineService;
 
-    @Autowired
-    private final AirlineRepository airlineRepository;
-
-    public AirlineController(AirlineRepository airlineRepository) {
-        this.airlineRepository = airlineRepository;
+    @GetMapping
+    public ResponseEntity<List<Airline>> getAirlines() {
+        return ResponseEntity.ok(airlineService.findAll());
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    List<Airline> getAirlines() {
-        return airlineRepository.findAll();
+    @GetMapping("/{id}")
+    public ResponseEntity<Airline> getAirline(@PathVariable Long id) {
+        return ResponseEntity.ok(airlineService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Airline> addAirline(@RequestBody final Airline airline) {
-        Airline savedAirline = airlineService.saveAirline(airline);
-        return new ResponseEntity<>(savedAirline, HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAirlineById(@PathVariable("id") final Long id) {
-        airlineService.deleteAirlineById(id);
-        return new ResponseEntity<>("Success", HttpStatus.OK);
+    public ResponseEntity<Airline> createAirline(@RequestBody Airline airline) {
+        Airline created = airlineService.create(airline);
+        return ResponseEntity.created(Locations.ofCreated(created.getId())).body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Airline> updateAirlineById(
-            @PathVariable("id") final Long id, @RequestBody final Airline airlineToUpdate) {
-        Airline updatedAirline = airlineService.updateAirlineById(id, airlineToUpdate);
-        return new ResponseEntity<>(updatedAirline, HttpStatus.OK);
+    public ResponseEntity<Airline> updateAirline(@PathVariable Long id, @RequestBody Airline changes) {
+        return ResponseEntity.ok(airlineService.update(id, changes));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAirline(@PathVariable Long id) {
+        airlineService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

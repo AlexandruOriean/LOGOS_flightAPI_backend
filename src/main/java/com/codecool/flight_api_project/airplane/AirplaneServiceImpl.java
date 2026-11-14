@@ -1,46 +1,49 @@
 package com.codecool.flight_api_project.airplane;
 
+import com.codecool.flight_api_project.common.error.ResourceNotFoundException;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Repository
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AirplaneServiceImpl implements AirplaneService {
 
-    @Autowired
-    private AirplaneRepository airplaneRepository;
+    private final AirplaneRepository airplaneRepository;
 
     @Override
-    public Airplane addAirplane(Airplane airplane) {
-        return airplaneRepository.save(airplane);
-    }
-
-    @Override
-    public List<Airplane> getAllAirplanes() {
+    public List<Airplane> findAll() {
         return airplaneRepository.findAll();
     }
 
     @Override
-    public Airplane getAirplaneById(Long id) {
-        return airplaneRepository.findById(id).orElseThrow();
+    public Airplane findById(Long id) {
+        return airplaneRepository.findById(id).orElseThrow(() -> ResourceNotFoundException.byId("Airplane", id));
     }
 
     @Override
-    public void deleteAirplaneByID(Long id) {
-        airplaneRepository.deleteById(id);
-    }
-
-    @Override
-    public Airplane updateAirplaneById(Long id, Airplane airplaneToUpdate) {
-        Airplane airplane = airplaneRepository.findById(id).get();
-
-        airplane.setManufacturer(airplaneToUpdate.getManufacturer());
-        airplane.setModel(airplaneToUpdate.getModel());
-        airplane.setNumberOfSeats(airplaneToUpdate.getNumberOfSeats());
-        airplane.setSpeed(airplaneToUpdate.getNumberOfSeats());
-
+    @Transactional
+    public Airplane create(Airplane airplane) {
+        airplane.setId(null); // never let a client-supplied id overwrite an existing row
         return airplaneRepository.save(airplane);
+    }
+
+    @Override
+    @Transactional
+    public Airplane update(Long id, Airplane changes) {
+        Airplane airplane = findById(id);
+        airplane.setManufacturer(changes.getManufacturer());
+        airplane.setModel(changes.getModel());
+        airplane.setNumberOfSeats(changes.getNumberOfSeats());
+        airplane.setSpeed(changes.getSpeed());
+        return airplane;
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        airplaneRepository.delete(findById(id));
     }
 }

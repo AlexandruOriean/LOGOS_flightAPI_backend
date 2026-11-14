@@ -1,30 +1,46 @@
 package com.codecool.flight_api_project.city;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import com.codecool.flight_api_project.common.error.ResourceNotFoundException;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Repository
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CityServiceImpl implements CityService {
 
-    @Autowired
-    private CityRepository cityRepository;
+    private final CityRepository cityRepository;
 
     @Override
-    public City saveCity(City city) {
+    public List<City> findAll() {
+        return cityRepository.findAll();
+    }
+
+    @Override
+    public City findById(Long id) {
+        return cityRepository.findById(id).orElseThrow(() -> ResourceNotFoundException.byId("City", id));
+    }
+
+    @Override
+    @Transactional
+    public City create(City city) {
+        city.setCityId(null); // never let a client-supplied id overwrite an existing row
         return cityRepository.save(city);
     }
 
     @Override
-    public void deleteCityById(Long id) {
-        cityRepository.deleteById(id);
+    @Transactional
+    public City update(Long id, City changes) {
+        City city = findById(id);
+        city.setCityName(changes.getCityName());
+        return city;
     }
 
     @Override
-    public City updateCityById(Long id, City cityToUpdate) {
-        City city = cityRepository.findById(id).get();
-        city.setCityName(cityToUpdate.getCityName());
-        return cityRepository.save(city);
+    @Transactional
+    public void delete(Long id) {
+        cityRepository.delete(findById(id));
     }
 }

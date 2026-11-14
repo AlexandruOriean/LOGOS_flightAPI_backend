@@ -1,6 +1,7 @@
 package com.codecool.flight_api_project;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -67,6 +68,19 @@ class AuthenticationFlowIT {
     }
 
     @Test
+    @DisplayName("registering a taken username is rejected with 409 problem+json")
+    void duplicateRegistrationIsConflict() throws Exception {
+        mockMvc.perform(post("/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                "{\"username\":\"it-user\",\"name\":\"IT\",\"email\":\"other@example.com\",\"password\":\"%s\"}"
+                                        .formatted(PASSWORD)))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Username is already taken."));
+    }
+
+    @Test
     @DisplayName("wrong password is rejected with 401 problem+json")
     void wrongPasswordIsRejected() throws Exception {
         mockMvc.perform(post("/users/login")
@@ -95,6 +109,15 @@ class AuthenticationFlowIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @DisplayName("unknown airport -> 404 problem+json")
+    void unknownAirportIsNotFound() throws Exception {
+        mockMvc.perform(get("/api/v1/airports/iata/XXX").header(HttpHeaders.AUTHORIZATION, bearer(userToken)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Airport with IATA code 'XXX' was not found"));
     }
 
     @Test
@@ -127,14 +150,32 @@ class AuthenticationFlowIT {
     }
 
     @Test
-    @DisplayName("ADMIN role from the token claims can call admin endpoints")
-    void adminRoleCanCallAdminEndpoints() throws Exception {
-        mockMvc.perform(post("/api/v1/cities")
+    @DisplayName("ADMIN can create (201 + Location), read and delete (204) a city; deleting it again is 404")
+    void adminCityLifecycle() throws Exception {
+        String location = mockMvc.perform(post("/api/v1/cities")
                         .header(HttpHeaders.AUTHORIZATION, bearer(adminToken))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"cityName\":\"Cluj\"}"))
+                        .content("{\"cityId\":1,\"cityName\":\"Cluj\"}"))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cityName").value("Cluj"))
+                // the client-supplied id must not overwrite the existing city 1
+                .andExpect(jsonPath("$.cityId").value(not(1)))
+                .andReturn()
+                .getResponse()
+                .getHeader(HttpHeaders.LOCATION);
+        assertThat(location).matches("http://localhost/api/v1/cities/\\d+");
+        String path = location.substring("http://localhost".length());
+
+        mockMvc.perform(get(path).header(HttpHeaders.AUTHORIZATION, bearer(adminToken)))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.cityName").value("Cluj"));
+        mockMvc.perform(get("/api/v1/cities/1").header(HttpHeaders.AUTHORIZATION, bearer(adminToken)))
+                .andExpect(jsonPath("$.cityName").value("Bucuresti"));
+
+        mockMvc.perform(delete(path).header(HttpHeaders.AUTHORIZATION, bearer(adminToken)))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(delete(path).header(HttpHeaders.AUTHORIZATION, bearer(adminToken)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -151,7 +192,7 @@ class AuthenticationFlowIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"%s\",\"name\":\"IT\",\"email\":\"%s\",\"password\":\"%s\"%s}"
                                 .formatted(username, email, PASSWORD, extraJson)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     private String login(String username) throws Exception {

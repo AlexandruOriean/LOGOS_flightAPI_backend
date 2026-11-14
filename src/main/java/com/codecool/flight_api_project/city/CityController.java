@@ -1,50 +1,51 @@
 package com.codecool.flight_api_project.city;
 
+import com.codecool.flight_api_project.common.web.Locations;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/cities")
 @CrossOrigin
-@Service
+@RequiredArgsConstructor
 public class CityController {
 
-    @Autowired
-    private final CityRepository cityRepository;
+    private final CityService cityService;
 
-    @Autowired
-    private CityService cityService;
-
-    public CityController(CityRepository cityRepository) {
-        this.cityRepository = cityRepository;
+    @GetMapping
+    public ResponseEntity<List<City>> getCities() {
+        return ResponseEntity.ok(cityService.findAll());
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    List<City> getCities() {
-        return cityRepository.findAll();
+    @GetMapping("/{id}")
+    public ResponseEntity<City> getCity(@PathVariable Long id) {
+        return ResponseEntity.ok(cityService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<City> addCity(@RequestBody final City city) {
-        City savedCity = cityService.saveCity(city);
-        return new ResponseEntity<>(savedCity, HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCityById(@PathVariable("id") final Long id) {
-        cityService.deleteCityById(id);
-        return new ResponseEntity<>("Success", HttpStatus.OK);
+    public ResponseEntity<City> createCity(@RequestBody City city) {
+        City created = cityService.create(city);
+        return ResponseEntity.created(Locations.ofCreated(created.getCityId())).body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<City> updateCityById(
-            @PathVariable("id") final Long id, @RequestBody final City cityToUpdate) {
-        City updatedCity = cityService.updateCityById(id, cityToUpdate);
-        return new ResponseEntity<>(updatedCity, HttpStatus.OK);
+    public ResponseEntity<City> updateCity(@PathVariable Long id, @RequestBody City changes) {
+        return ResponseEntity.ok(cityService.update(id, changes));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCity(@PathVariable Long id) {
+        cityService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
