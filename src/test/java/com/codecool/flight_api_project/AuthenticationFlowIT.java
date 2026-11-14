@@ -1,8 +1,11 @@
 package com.codecool.flight_api_project;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -64,18 +67,34 @@ class AuthenticationFlowIT {
     }
 
     @Test
-    @DisplayName("wrong password is rejected with 401")
+    @DisplayName("wrong password is rejected with 401 problem+json")
     void wrongPasswordIsRejected() throws Exception {
         mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"it-user\",\"password\":\"wrong\"}"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Invalid username or password."));
     }
 
     @Test
-    @DisplayName("protected endpoint requires a token")
+    @DisplayName("protected endpoint without a token -> 401 problem+json with WWW-Authenticate")
     void protectedEndpointWithoutTokenIsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/v1/airports")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/airports"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.instance").value("/api/v1/airports"));
+    }
+
+    @Test
+    @DisplayName("invalid path parameter on a public endpoint -> 400 problem+json")
+    void invalidPathParameterIsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/flights/London/Henri/not-a-date"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -102,7 +121,9 @@ class AuthenticationFlowIT {
                         .header(HttpHeaders.AUTHORIZATION, bearer(userToken))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"cityName\":\"Cluj\"}"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(403));
     }
 
     @Test
@@ -114,6 +135,15 @@ class AuthenticationFlowIT {
                         .content("{\"cityName\":\"Cluj\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.cityName").value("Cluj"));
+    }
+
+    @Test
+    @DisplayName("deleting a city still referenced by airports -> 409 problem+json, no SQL details")
+    void deletingReferencedCityIsConflict() throws Exception {
+        mockMvc.perform(delete("/api/v1/cities/1").header(HttpHeaders.AUTHORIZATION, bearer(adminToken)))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Data integrity violation"));
     }
 
     private void register(String username, String email, String extraJson) throws Exception {

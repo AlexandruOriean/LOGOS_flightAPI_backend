@@ -23,11 +23,15 @@ import org.springframework.security.web.SecurityFilterChain;
 public class ApplicationSecurityConfig {
 
     private final AuthEntryPointJwt unauthorizedHandler;
+    private final ProblemDetailAccessDeniedHandler accessDeniedHandler;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
 
     public ApplicationSecurityConfig(
-            AuthEntryPointJwt unauthorizedHandler, JwtAuthenticationConverter jwtAuthenticationConverter) {
+            AuthEntryPointJwt unauthorizedHandler,
+            ProblemDetailAccessDeniedHandler accessDeniedHandler,
+            JwtAuthenticationConverter jwtAuthenticationConverter) {
         this.unauthorizedHandler = unauthorizedHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
         this.jwtAuthenticationConverter = jwtAuthenticationConverter;
     }
 
@@ -51,7 +55,8 @@ public class ApplicationSecurityConfig {
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
+                .exceptionHandling(
+                        ex -> ex.authenticationEntryPoint(unauthorizedHandler).accessDeniedHandler(accessDeniedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/users/**")
                         .permitAll()
@@ -108,7 +113,8 @@ public class ApplicationSecurityConfig {
                 // Bearer tokens are validated by the JwtDecoder from JwtConfig
                 .oauth2ResourceServer(
                         oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))
-                                .authenticationEntryPoint(unauthorizedHandler));
+                                .authenticationEntryPoint(unauthorizedHandler)
+                                .accessDeniedHandler(accessDeniedHandler));
 
         return http.build();
     }
