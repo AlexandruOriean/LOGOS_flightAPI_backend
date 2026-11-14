@@ -18,13 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Revives the airline tests that were commented out in FlightApiProjectApplicationTests, as unit tests. */
 @ExtendWith(MockitoExtension.class)
-class AirlineServiceImplTest {
+class AirlineServiceTest {
 
     @Mock
     private AirlineRepository airlineRepository;
 
     @InjectMocks
-    private AirlineServiceImpl airlineService;
+    private AirlineService airlineService;
 
     private final Airline tarom = new Airline(10000L, "Tarom", "TRO");
 

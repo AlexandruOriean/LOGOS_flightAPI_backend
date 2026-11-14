@@ -20,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Revives the flight search test that was commented out in FlightApiProjectApplicationTests, as unit tests. */
 @ExtendWith(MockitoExtension.class)
-class FlightServiceImplTest {
+class FlightServiceTest {
 
     private static final LocalDate DATE = LocalDate.of(2021, 1, 15);
 
@@ -28,7 +28,7 @@ class FlightServiceImplTest {
     private FlightRepository flightRepository;
 
     @InjectMocks
-    private FlightServiceImpl flightService;
+    private FlightService flightService;
 
     private final Airport otopeni = new Airport(1L, "OTP", "Otopeni", new City(12L, "Bucuresti"));
     private final Airport heathrow = new Airport(2L, "LHR", "Heathrow", new City(21L, "London"));

@@ -1,22 +1,47 @@
 package com.codecool.flightapi.city;
 
+import com.codecool.flightapi.common.error.ResourceNotFoundException;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-public interface CityService {
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class CityService {
 
-    List<City> findAll();
+    private final CityRepository cityRepository;
+
+    public List<City> findAll() {
+        return cityRepository.findAll();
+    }
 
     /**
      * Returns the entity with the given id.
      *
      * @throws com.codecool.flightapi.common.error.ResourceNotFoundException if absent
      */
-    City findById(Long id);
+    public City findById(Long id) {
+        return cityRepository.findById(id).orElseThrow(() -> ResourceNotFoundException.byId("City", id));
+    }
 
     /** Creates a new city; any client-supplied id is ignored. */
-    City create(City city);
+    @Transactional
+    public City create(City city) {
+        city.setCityId(null); // never let a client-supplied id overwrite an existing row
+        return cityRepository.save(city);
+    }
 
-    City update(Long id, City changes);
+    @Transactional
+    public City update(Long id, City changes) {
+        City city = findById(id);
+        city.setCityName(changes.getCityName());
+        return city;
+    }
 
-    void delete(Long id);
+    @Transactional
+    public void delete(Long id) {
+        cityRepository.delete(findById(id));
+    }
 }

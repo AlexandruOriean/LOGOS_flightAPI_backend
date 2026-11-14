@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Repository
-public interface FlightRepository extends JpaRepository<Flight, Long> {
+interface FlightRepository extends JpaRepository<Flight, Long> {
 
     @Query(
             value =

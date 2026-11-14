@@ -16,13 +16,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class AirplaneServiceImplTest {
+class AirplaneServiceTest {
 
     @Mock
     private AirplaneRepository airplaneRepository;
 
     @InjectMocks
-    private AirplaneServiceImpl airplaneService;
+    private AirplaneService airplaneService;
 
     @Test
     void findByIdThrowsNotFoundForUnknownId() {

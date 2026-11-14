@@ -1,9 +1,9 @@
-package com.codecool.flightapi.persistence;
+package com.codecool.flightapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.codecool.flightapi.airport.AirportRepository;
-import com.codecool.flightapi.flight.FlightRepository;
+import com.codecool.flightapi.airport.AirportService;
+import com.codecool.flightapi.flight.FlightService;
 import com.codecool.flightapi.user.RoleName;
 import com.codecool.flightapi.user.RoleRepository;
 import java.time.LocalDate;
@@ -37,10 +37,10 @@ class PostgresMigrationIT {
     private Flyway flyway;
 
     @Autowired
-    private AirportRepository airportRepository;
+    private AirportService airportService;
 
     @Autowired
-    private FlightRepository flightRepository;
+    private FlightService flightService;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -55,9 +55,9 @@ class PostgresMigrationIT {
     @Test
     @DisplayName("seed data and native queries work on PostgreSQL")
     void nativeQueriesWorkOnPostgres() {
-        assertThat(airportRepository.getAirportByIataCode("otp").getAirportName())
+        assertThat(airportService.findByIataCode("otp").getAirportName())
                 .isEqualTo("Henri Coanda International Airport");
-        assertThat(flightRepository.getFlightByParams("London", "Henri", LocalDate.of(2020, 11, 1)))
+        assertThat(flightService.search("London", "Henri", LocalDate.of(2020, 11, 1)))
                 .hasSize(1);
         assertThat(roleRepository.findByName(RoleName.ROLE_ADMIN)).isPresent();
     }
