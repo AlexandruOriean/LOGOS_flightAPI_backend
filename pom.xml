@@ -47,6 +47,7 @@
         <spotless-maven-plugin.version>3.10.4</spotless-maven-plugin.version>
         <palantir-java-format.version>2.103.0</palantir-java-format.version>
         <error-prone.version>2.51.0</error-prone.version>
+        <dependency-check-maven.version>13.0.0</dependency-check-maven.version>
 
         <!-- Default for @{argLine}; JaCoCo fills it in, this keeps tests runnable when JaCoCo is skipped -->
         <argLine/>
@@ -501,6 +502,48 @@
         <!-- Production artifact: `./mvnw -Pprod verify` (PostgreSQL only, no H2) -->
         <profile>
             <id>prod</id>
+        </profile>
+
+        <!--
+          OWASP dependency vulnerability scan (runs in CI, see .github/workflows/security-scan.yml).
+          Locally: NVD_API_KEY=... ./mvnw -Pprod,security-scan -DskipTests verify
+          Report: target/dependency-check-report.html
+        -->
+        <profile>
+            <id>security-scan</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>${dependency-check-maven.version}</version>
+                        <configuration>
+                            <nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+                            <!-- Stable location so CI can cache the (large) NVD database between runs -->
+                            <dataDirectory>${user.home}/.dependency-check/data</dataDirectory>
+                            <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <suppressionFiles>
+                                <suppressionFile>${maven.multiModuleProjectDirectory}/dependency-check-suppressions.xml</suppressionFile>
+                            </suppressionFiles>
+                            <!-- Sonatype OSS Index now requires credentials; NVD + GitHub advisories are used instead -->
+                            <ossIndexAnalyzerEnabled>false</ossIndexAnalyzerEnabled>
+                            <!-- .NET analyzer is irrelevant for a Java project -->
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                            <formats>
+                                <format>HTML</format>
+                                <format>SARIF</format>
+                            </formats>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
