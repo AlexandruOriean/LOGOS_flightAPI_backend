@@ -47,68 +47,56 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+    /**
+     * The application's filter chain. Authorization is deny-by-default: every request must match one
+     * of the rules below, otherwise it is rejected. Rules are evaluated top to bottom.
+     *
+     * <ul>
+     *   <li>Public: login/registration, error page, health/info probes, and the flight search and
+     *       flight details the frontend shows before login.
+     *   <li>Any signed-in user: every other {@code GET /api/v1/**}.
+     *   <li>ADMIN: the full flight list and every write ({@code POST/PUT/DELETE /api/v1/**}).
+     *   <li>Everything else: denied.
+     * </ul>
+     *
+     * <p>Dev-only tooling (H2 console, Swagger UI) has its own chain in {@link DevToolsSecurityConfig}.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // NOTE: rules are carried over unchanged from the pre-Boot-4 config.
-        // Deny-by-default and the shadowed flight rules are tracked in REFACTORING_ROADMAP.md (task 7).
-        http.headers(headers -> headers.frameOptions(frame -> frame.disable()))
-                .cors(Customizer.withDefaults())
+        http.cors(Customizer.withDefaults())
+                // stateless bearer-token API: no session, so no CSRF token to protect
                 .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(
                         ex -> ex.authenticationEntryPoint(unauthorizedHandler).accessDeniedHandler(accessDeniedHandler))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/users/**")
+                .authorizeHttpRequests(auth -> auth
+                        // --- public ---
+                        .requestMatchers(HttpMethod.POST, "/users/register", "/users/login")
                         .permitAll()
-                        .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**")
+                        .requestMatchers(HttpMethod.GET, "/users/logout")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/flights/**")
+                        .requestMatchers("/error")
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/flights")
-                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**", "/actuator/info")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/flights/{id}", "/api/v1/flights/{from}/{to}/{date}")
+                        .permitAll()
+                        // --- admin-only reads ---
                         .requestMatchers(HttpMethod.GET, "/api/v1/flights")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/flights/{id}")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/flights/{id}")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/cities")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/cities", "/api/v1/cities/{id}")
+                        // --- any signed-in user ---
+                        .requestMatchers(HttpMethod.GET, "/api/v1/**")
                         .authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/cities/{id}")
+                        // --- writes ---
+                        .requestMatchers(HttpMethod.POST, "/api/v1/**")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/cities/{id}")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/**")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/airports")
-                        .authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/airports/{id}")
-                        .authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/airports/iata/{iataCode}")
-                        .authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/airports")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/**")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/airports/{id}")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/airports/{id}")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/airplanes")
-                        .authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/airplanes")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/airplanes/{id}")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/airplanes/{id}")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/airlines", "/api/v1/airlines/{id}")
-                        .authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/airlines")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/airlines/{id}")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/airlines/{id}")
-                        .hasRole("ADMIN")
+                        // --- deny by default ---
                         .anyRequest()
-                        .permitAll())
+                        .denyAll())
                 // Bearer tokens are validated by the JwtDecoder from JwtConfig
                 .oauth2ResourceServer(
                         oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))
