@@ -1,0 +1,6 @@
+# Revisions ignored by `git blame` (enable once per clone with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# GitHub applies this file automatically).
+
+# style: format code with palantir-java-format
+7ec84cac7199c535ce7487de0b581ff6d4761f1f
