@@ -30,10 +30,4 @@ public class Airplane {
 
     @Column(name = "speed")
     private double speed;
-    //
-    //    @ManyToOne
-    //    @JoinColumn(name = "airline_id")
-    ////    @JsonIgnore
-    //    private Airline airline;
-
 }

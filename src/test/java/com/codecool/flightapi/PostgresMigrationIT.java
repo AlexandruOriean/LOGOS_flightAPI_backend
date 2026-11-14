@@ -49,7 +49,7 @@ class PostgresMigrationIT {
     @DisplayName("all migrations are applied on PostgreSQL")
     void migrationsAreApplied() {
         assertThat(flyway.info().pending()).isEmpty();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("2");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("3");
     }
 
     @Test

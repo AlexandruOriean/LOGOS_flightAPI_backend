@@ -19,11 +19,4 @@ public class City {
 
     @Column(name = "city_name")
     private String cityName;
-
-    //    @OneToMany(
-    //               cascade = CascadeType.ALL,
-    //               orphanRemoval = true,
-    //               mappedBy = "city")
-    //    private List<Airport> airportList;
-
 }

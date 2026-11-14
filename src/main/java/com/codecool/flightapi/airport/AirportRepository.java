@@ -9,9 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 interface AirportRepository extends JpaRepository<Airport, Long> {
 
-    @Query(value = "select * from Airport ", nativeQuery = true)
-    List<Airport> getAllAirports();
-
     @Query(value = "SELECT AIRPORT_NAME FROM Airport", nativeQuery = true)
     List<String> getAllAirportsNames();
 

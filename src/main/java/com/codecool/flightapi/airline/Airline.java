@@ -21,26 +21,7 @@ public class Airline {
 
     @Column(name = "name")
     private String name;
-    //
-    //    @Column(name="airline_iata_code")
-    //    private String airlineIataCode;
 
     @Column(name = "iso")
     private String iso;
-    //
-    //    @OneToMany(
-    //            fetch = FetchType.EAGER,
-    //                cascade = CascadeType.ALL,
-    //                orphanRemoval = true,
-    //                mappedBy = "airline")
-    //    private List<Airplane> airplaneList =  new ArrayList<>();
-    //
-    //
-    //    @OneToMany(
-    //            fetch = FetchType.EAGER,
-    //            cascade = CascadeType.ALL,
-    //            orphanRemoval = true,
-    //            mappedBy = "airline"
-    //    )
-    //    private List<Flight> flights = new ArrayList<>();
 }
